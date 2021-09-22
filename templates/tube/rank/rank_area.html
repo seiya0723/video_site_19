@@ -1,0 +1,52 @@
+{% load static %}
+
+{% if all_ranks %}
+<div>
+    <h3>総合部門</h3>
+    <div class="preview_control_area">
+        <div class="data_preview_area">
+            {% for all_rank in all_ranks %}
+            <div class="data_preview_frame">
+                <div class="data_preview_header rank_header">{{ forloop.counter }}位 {{ all_rank.score }}pt</div>
+                <a href="{% url 'tube:single' all_rank.target  %}" class="data_preview_content">
+                    <div class="data_preview_content_thumbnail"><img src="/media/{{ all_rank.target__thumbnail }}" alt=""></div>
+                    <div class="data_preview_content_title">{{ all_rank.target__title }}</div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="control_button previous_button">Prev</div>
+        <div class="control_button next_button">Next</div>
+    </div>
+</div>
+{% endif %}
+
+
+
+{% for cate_rank in cate_ranks %}
+<div>
+
+    {% if cate_rank %}
+    <h3>{{ cate_rank.category }}部門</h3>
+
+    <div class="preview_control_area">
+        <div class="data_preview_area">
+            {% for rank in cate_rank.ranks %}
+            <div class="data_preview_frame">
+                <div class="data_preview_header rank_header">{{ forloop.counter }}位 {{ rank.score }}pt</div>
+                <a href="{% url 'tube:single' rank.target %}" class="data_preview_content">
+                    <div class="data_preview_content_thumbnail"><img src="/media/{{ rank.target__thumbnail }}" alt=""></div>
+                    <div class="data_preview_content_title">{{ rank.target__title }}</div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="control_button previous_button">Prev</div>
+        <div class="control_button next_button">Next</div>
+    </div>
+    {% endif %}
+
+</div>
+{% endfor %}
+
+

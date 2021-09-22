@@ -1,0 +1,53 @@
+{% extends "tube/mypage_base.html" %}
+{% load static %}
+{% load param_change %}
+
+
+{% block mypage_content %}
+
+<h2>マイリスト</h2>
+
+{% if amount > 0 %}
+<div>{{ amount }}件中、{{ mylists|length }}件表示しています。</div>
+
+<form name="mylist_clear_form" action="{% url 'tube:mylist_clear' %}" method="POST">
+    {% csrf_token %}
+    <input class="btn btn-outline-info follow_btn"  type="submit" value="マイリストを空にする。">
+</form>
+
+{% endif %}
+
+{% for mylist in mylists %}
+<div class="video_list_view">
+
+    <div class="video_list_thumbnail_area">
+        {% if mylist.target.thumbnail %}
+        <a class="video_list_thumbnail" href="{% url 'tube:single' mylist.target.id %}"><img src="{{ mylist.target.thumbnail.url }}" alt="thumbnail"></a>
+        {% else %}
+        <a class="video_list_thumbnail" href="{% url 'tube:single' mylist.target.id %}"><img src="{% static 'tube/img/no-img.png' %}" alt="thumbnail"></a>
+        {% endif %}
+            
+    </div>
+    <div class="video_list_description_area">
+        <div class="video_list_description_inner">
+            <h5 class="video_list_title"><a class="video_list_title_link" href="{% url 'tube:single' mylist.target.id %}">{{ mylist.target.title }}</a></h5>
+            <div>{{ mylist.target.user.handle_name }}</div>
+            <div class="video_list_description_overflow">{{ mylist.target.description }}</div>
+            <div>登録日時:{{ mylist.dt|date:"Y年m月d日 H時i分s秒" }}</div>
+        </div>  
+    </div>      
+    <div class="video_list_clearbtn_area">
+        <form id="mylist_clear_form_{{ mylist.id }}" name="mylist_clear_form" action="{% url 'tube:mylist_one_each_clear' mylist.id %}" method="POST">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary mylist_clear_btn"  type="submit" value="{{ mylist.id }}">削除</button>
+        </form>
+    </div>
+</div>  
+{% empty %}
+<p>マイリストはありません。</p>
+{% endfor %}
+
+{% generate_pagelink request "page" "1" mylists.paginator.num_pages mylists.number %}
+
+
+{% endblock %}
