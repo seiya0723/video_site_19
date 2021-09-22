@@ -56,6 +56,17 @@ class IndexView(views.APIView):
 
     def get(self, request,*args, **kwargs):
 
+
+        #TIPS:管理サイトから指定したドメインを参照して表示する。
+        #settings.pyのSITE_IDを取得する。
+        from django.contrib.sites.models import Site
+        from django.conf import settings
+
+        site    = Site.objects.filter(id=settings.SITE_ID).first()
+        print(site.domain)
+        print(site.name)
+
+
         topics = Topic.objects.all().order_by("-dt")[:DEFAULT_TOPIC_AMOUNT]
         t_amount = topics.count()
         paginator = Paginator(topics, 10)
@@ -1090,6 +1101,8 @@ class RankingView(views.APIView):
 
         categories = VideoCategory.objects.all()
 
+        print(categories)
+
         # カテゴリごとに検索してアペンド
         for category in categories:
             dic = {}
@@ -1103,22 +1116,17 @@ class RankingView(views.APIView):
             cate_last_week_query = Q(category=category.id) & last_week_query
             cate_last_month_query = Q(category=category.id) & last_month_query
 
-            daily_dic["ranks"] = sorted(Activity.objects.filter(cate_yesterday_query).values("target", "target__title",
-                                                                                             "target__thumbnail").annotate(
-                score=self.rank_calc(play=Sum("play"), mylist=Sum("mylist"), good=Sum("good"),
-                                     comment=Sum("comment"))
-            ).order_by(), key=lambda obj: obj["score"], reverse=True)
-            weekly_dic["ranks"] = sorted(Activity.objects.filter(cate_last_week_query).values("target", "target__title",
-                                                                                              "target__thumbnail").annotate(
-                score=self.rank_calc(play=Sum("play"), mylist=Sum("mylist"), good=Sum("good"),
-                                     comment=Sum("comment"))
-            ).order_by(), key=lambda obj: obj["score"], reverse=True)
-            monthly_dic["ranks"] = sorted(
-                Activity.objects.filter(cate_last_month_query).values("target", "target__title",
-                                                                      "target__thumbnail").annotate(
-                    score=self.rank_calc(play=Sum("play"), mylist=Sum("mylist"), good=Sum("good"),
-                                         comment=Sum("comment"))
-                ).order_by(), key=lambda obj: obj["score"], reverse=True)
+            daily_dic["ranks"] = sorted(Activity.objects.filter(cate_yesterday_query).values("target", "target__title","target__thumbnail").annotate(
+                                        score=self.rank_calc(play=Sum("play"), mylist=Sum("mylist"), good=Sum("good"),comment=Sum("comment"))).order_by(), key=lambda obj: obj["score"], reverse=True)
+            weekly_dic["ranks"] = sorted(Activity.objects.filter(cate_last_week_query).values("target", "target__title","target__thumbnail").annotate(
+                                        score=self.rank_calc(play=Sum("play"), mylist=Sum("mylist"), good=Sum("good"),comment=Sum("comment"))).order_by(), key=lambda obj: obj["score"], reverse=True)
+            monthly_dic["ranks"] = sorted(Activity.objects.filter(cate_last_month_query).values("target", "target__title","target__thumbnail").annotate(
+                                        score=self.rank_calc(play=Sum("play"), mylist=Sum("mylist"), good=Sum("good"),comment=Sum("comment"))).order_by(), key=lambda obj: obj["score"], reverse=True)
+
+            print(daily_dic["ranks"])
+            print(weekly_dic["ranks"])
+            print(monthly_dic["ranks"])
+
 
             if daily_dic["ranks"]:
                 context["daily_cate_ranks"].append(daily_dic)
@@ -1462,6 +1470,10 @@ class UUIDListSerializer(serializers.Serializer):
         record_list = Log.objects.filter(id__in=data["id_list"])
         record_list.delete()
 
+        #まとめてフィールドの値を書き換える
+        for r in record_list:
+            r.flag  = True
+            r.save()
 
 """
 
